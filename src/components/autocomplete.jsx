@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const Autocomplete = ({
-  fetchSuggestions = {},
+  fetchSuggestions,
   customLoading = 'loading...',
   onSelect = {},
   onChange = {},
@@ -10,11 +10,12 @@ const Autocomplete = ({
   customStyles = {},
   placeholder,
 }) => {
-  const [inputValue, setInputValue] = useState();
+  const [inputValue, setInputValue] = useState("");
   console.log(inputValue, 'inputvalue');
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  console.log(suggestions , "suggestions")
 
   const HandleInputChange = (event) => {
     setInputValue(event.target.value);
@@ -32,8 +33,22 @@ const Autocomplete = ({
       } else if (fetchSuggestions) {
         result = await fetchSuggestions(query);
       }
-    } catch {}
+      setSuggestions(result);
+    } catch(error) {
+      setError("Failed to fetch suggestions");
+      setSuggestions([]);
+    }finally{
+      setLoading(false)
+    }
   };
+
+  useEffect(()=> {
+    if(inputValue.length> 1){
+      getSuggestions(inputValue);
+    }else{
+      getSuggestions([]);
+    }
+  } , [inputValue]);
 
   return (
     <>
@@ -46,6 +61,7 @@ const Autocomplete = ({
           onBlur={onBlur}
           onFocus={onFocus}
           onChange={HandleInputChange}
+          fetchSuggestions={fetchSuggestions}
         />
       </div>
     </>
